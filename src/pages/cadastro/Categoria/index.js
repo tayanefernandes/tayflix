@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import PageDefault from '../../../components/PageDefault';
 import FormField from '../../../components/FormField';
 import Button from '../../../components/Button';
+import useForm from '../../../hooks/useForm';
+import categoriasRepository from '../../../repositories/categorias';
 
 const CadastroCategoria = () => {
   const valoresIniciais = {
@@ -11,41 +13,23 @@ const CadastroCategoria = () => {
     cor: '',
   };
 
-  const [values, setValues] = useState(valoresIniciais);
+  const { handleChange, values, clearForm } = useForm(valoresIniciais);
+
   const [categorias, setCategorias] = useState([]);
 
-  const setValue = (chave, valor) => {
-    setValues({
-      ...values,
-      [chave]: valor,
-    });
-  };
-
-  const handleChange = (e) => {
-    const { value } = e.target;
-    setValue(e.target.getAttribute('name'), value);
-  };
-
   useEffect(() => {
-    const URL = window.location.hostname.includes('localhost')
-      ? 'http://localhost:8080/categorias'
-      : 'https://tayflix.herokuapp.com/categorias';
-
-    fetch(URL)
-      .then(async (response) => {
-        const respostaJson = await response.json();
-
-        setCategorias([
-          ...respostaJson,
-        ]);
-      });
+    categoriasRepository.getAll().then((todasCategorias) => {
+      setCategorias([
+        ...todasCategorias,
+      ]);
+    });
   }, []);
 
   return (
     <PageDefault>
       <h1>
         Cadastro de Categoria:
-        {values.nome}
+        {values.titulo}
       </h1>
 
       <form onSubmit={(e) => {
@@ -56,10 +40,10 @@ const CadastroCategoria = () => {
           values,
         ]);
 
-        setValues(valoresIniciais);
+        clearForm();
       }}
       >
-        <FormField value={values.nome} onChange={handleChange} name="nome" label="Nome" type="text" />
+        <FormField value={values.titulo} onChange={handleChange} name="titulo" label="Titulo" type="text" />
         <FormField value={values.descricao} onChange={handleChange} name="descricao" label="Descrição" type="textarea" />
         <FormField value={values.cor} onChange={handleChange} name="cor" label="Cor" type="color" />
         <Button>
@@ -75,8 +59,8 @@ const CadastroCategoria = () => {
 
       <ul>
         {categorias.map((categoria, index) => (
-          <li key={`${categoria.nome}${index}`}>
-            {categoria.nome}
+          <li key={`${categoria.titulo}${index}`}>
+            {categoria.titulo}
             <br />
             {categoria.descricao}
             <br />
